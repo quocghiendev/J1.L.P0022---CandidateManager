@@ -114,7 +114,7 @@ public class CandidateController {
             String id = inputUniqueId();
             candidates.add(inputCandidate(type, id));
             view.showMessage("Candidate added successfully.");
-        } while (view.inputContinue());
+        } while (view.inputContinue().equalsIgnoreCase("Y"));
 
         view.showMessage("\nAll candidates created:");
         view.displayCandidates(candidates);

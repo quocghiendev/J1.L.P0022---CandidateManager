@@ -130,8 +130,9 @@ public class CandidateView {
         String email = inputEmail();
         String graduationDate = validation.inputDate(
                 "Enter graduation date (dd/MM/yyyy): ");
-        String graduationRank = validation.inputGraduationRank(
-                "Enter graduation rank (Excellence, Good, Fair, Poor): ");
+        String graduationRank = validation.inputString("input graduation "
+                + "rank (Excellence/Good/Fair/Poor)",
+                Validation.GRADUATION_RANK_REGEX);
         String education = validation.inputString(
                 "Enter university where graduated: ", ".+");
 
@@ -166,8 +167,8 @@ public class CandidateView {
      *
      * @return true nếu chọn Y, false nếu chọn N
      */
-    public boolean inputContinue() {
-        return validation.inputYesNo("Do you want to continue (Y/N)? ");
+    public String inputContinue() {
+        return validation.inputString("Do you want to continue (Y/N)? ", "^(?i:Y|N)$");
     }
 
     /**

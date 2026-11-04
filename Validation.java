@@ -42,6 +42,8 @@ public class Validation {
      */
     private static final String[] GRADUATION_RANKS
             = {"Excellence", "Good", "Fair", "Poor"};
+    
+    public static final String GRADUATION_RANK_REGEX ="(?i)" + String.join("|", GRADUATION_RANKS);
 
     /**
      * Định dạng ngày tốt nghiệp.
@@ -134,49 +136,6 @@ public class Validation {
                 System.out.println("Invalid date. Format must be "
                         + DATE_FORMAT + ".");
             }
-        }
-    }
-
-    /**
-     * Nhập xếp loại tốt nghiệp, chỉ chấp nhận Excellence, Good, Fair hoặc
-     * Poor (không phân biệt hoa thường).
-     *
-     * @param message nội dung nhắc nhập
-     * @return xếp loại đã chuẩn hóa chữ hoa đầu
-     */
-    public String inputGraduationRank(String message) {
-        while (true) {
-            System.out.print(message);
-            String input = readLine();
-
-            for (String rank : GRADUATION_RANKS) {
-                if (rank.equalsIgnoreCase(input)) {
-                    return rank;
-                }
-            }
-            System.out.println("Rank must be one of: Excellence, Good, "
-                    + "Fair, Poor.");
-        }
-    }
-
-    /**
-     * Nhập lựa chọn Y/N.
-     *
-     * @param message nội dung nhắc nhập
-     * @return true nếu người dùng chọn Y, false nếu chọn N
-     */
-    public boolean inputYesNo(String message) {
-        while (true) {
-            System.out.print(message);
-            String input = readLine();
-
-            if (input.equalsIgnoreCase("Y")) {
-                return true;
-            }
-            if (input.equalsIgnoreCase("N")) {
-                return false;
-            }
-            System.out.println("Please enter Y or N.");
         }
     }
 }
