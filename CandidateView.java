@@ -22,15 +22,18 @@ import model.Internship;
 import util.Validation;
 
 /**
- * Giao diện dòng lệnh của chương trình Quản lý ứng viên. Đây là thành phần
- * View trong kiến trúc MVC: chỉ lo việc nhập, xuất dữ liệu và không xử lý
- * nghiệp vụ.
+ * Giao diện dòng lệnh của chương trình Quản lý ứng viên. Đây là thành phần View
+ * trong kiến trúc MVC: chỉ lo việc nhập, xuất dữ liệu và không xử lý nghiệp vụ.
  *
  * @version 1.1 06 Nov 2026
  * @author [Họ tên sinh viên]
  */
 public class CandidateView {
 
+    /**
+     * Tuổi tối thiểu để được tốt nghiệp.
+     */
+    private static final int MIN_VALID_AGE = 12;
     /**
      * Tiêu đề hiển thị cho từng loại ứng viên, theo thứ tự 0, 1, 2.
      */
@@ -44,8 +47,8 @@ public class CandidateView {
             = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-8s %-20s%n";
 
     /**
-     * Định dạng một dòng dữ liệu của ứng viên Experience: ID, First name,
-     * Last name, Birth year, Address, Phone, Email, Years of experience,
+     * Định dạng một dòng dữ liệu của ứng viên Experience: ID, First name, Last
+     * name, Birth year, Address, Phone, Email, Years of experience,
      * Professional skill.
      */
     private static final String EXPERIENCE_ROW_FORMAT
@@ -58,9 +61,9 @@ public class CandidateView {
             = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-12s %-10s %-20s%n";
 
     /**
-     * Định dạng một dòng dữ liệu của ứng viên Fresher: ID, First name,
-     * Last name, Birth year, Address, Phone, Email, Graduation date,
-     * Graduation rank, University.
+     * Định dạng một dòng dữ liệu của ứng viên Fresher: ID, First name, Last
+     * name, Birth year, Address, Phone, Email, Graduation date, Graduation
+     * rank, University.
      */
     private static final String FRESHER_ROW_FORMAT
             = "%-8s %-15s %-15s %-6d %-20s %-12s %-25s %-12s %-10s %-20s%n";
@@ -72,9 +75,8 @@ public class CandidateView {
             = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-15s %-10s %-20s%n";
 
     /**
-     * Định dạng một dòng dữ liệu của ứng viên Internship: ID, First name,
-     * Last name, Birth year, Address, Phone, Email, Major, Semester,
-     * University.
+     * Định dạng một dòng dữ liệu của ứng viên Internship: ID, First name, Last
+     * name, Birth year, Address, Phone, Email, Major, Semester, University.
      */
     private static final String INTERN_ROW_FORMAT
             = "%-8s %-15s %-15s %-6d %-20s %-12s %-25s %-15s %-10s %-20s%n";
@@ -85,6 +87,7 @@ public class CandidateView {
     private static final int CURRENT_YEAR
             = Calendar.getInstance().get(Calendar.YEAR);
 
+    private static final int VALID_YEAR = CURRENT_YEAR - 18;
     /**
      * Đối tượng kiểm tra dữ liệu nhập.
      */
@@ -135,6 +138,17 @@ public class CandidateView {
                 "[A-Za-z0-9]+");
     }
 
+    private Candidate inputCandidate(String id, int type) {
+        String firstName = inputFirstName();
+        String lastName = inputLastName();
+        int birthDate = inputBirthDate();
+        String address = inputAddress();
+        String phone = inputPhone();
+        String email = inputEmail();
+        return new Candidate(id, firstName, lastName, birthDate, address, phone, email, type);
+
+    }
+
     /**
      * Nhập thông tin ứng viên có kinh nghiệm.
      *
@@ -142,45 +156,57 @@ public class CandidateView {
      * @return ứng viên có kinh nghiệm vừa nhập
      */
     public Experience inputExperience(String id) {
-        String firstName = inputFirstName();
-        String lastName = inputLastName();
-        int birthDate = inputBirthDate();
-        String address = inputAddress();
-        String phone = inputPhone();
-        String email = inputEmail();
+        Candidate c = inputCandidate(id, Validation.EXPERIENCE);
         int expInYear = validation.inputInt(
-                "Enter year of experience (0-100): ", 0, 100);
+                "Enter year of experience (0-100): ", 0, 
+                (CURRENT_YEAR - c.getBirthDate())- MIN_VALID_AGE);
         String proSkill = validation.inputString(
                 "Enter professional skill: ", ".+");
 
-        return new Experience(id, firstName, lastName, birthDate, address,
-                phone, email, expInYear, proSkill);
+        return new Experience(c.getId(), c.getFirstName(), c.getLastName(),
+                c.getBirthDate(), c.getAddress(),
+                c.getPhone(), c.getEmail(), expInYear, proSkill);
     }
 
     /**
-     * Nhập thông tin ứng viên mới tốt nghiệp. Năm tốt nghiệp phải sau năm
-     * sinh.
+     * Nhập ngày tốt nghiệp (dd/MM/yyyy). Năm tốt nghiệp phải cách năm sinh ít
+     * nhất 12 năm (đủ 12 tuổi mới được tốt nghiệp).
+     *
+     * @param birthYear năm sinh của ứng viên
+     * @return ngày tốt nghiệp hợp lệ dạng dd/MM/yyyy
+     */
+    private String inputGraduationDate(int birthYear) {
+        while (true) {
+            String date = validation.inputDate(
+                    "Enter graduation date (dd/MM/yyyy): ");
+            int year = Integer.parseInt(date.substring(6));
+
+            if (year >= birthYear + MIN_VALID_AGE && year <= CURRENT_YEAR) {
+                return date;
+            }
+            System.out.println("Graduation year must be at least "
+                    + (birthYear + MIN_VALID_AGE) + ".");
+        }
+    }
+
+    /**
+     * Nhập thông tin ứng viên mới tốt nghiệp. Năm tốt nghiệp phải sau năm sinh.
      *
      * @param id mã ứng viên đã được Controller kiểm tra không trùng
      * @return ứng viên mới tốt nghiệp vừa nhập
      */
     public Fresher inputFresher(String id) {
-        String firstName = inputFirstName();
-        String lastName = inputLastName();
-        int birthDate = inputBirthDate();
-        String address = inputAddress();
-        String phone = inputPhone();
-        String email = inputEmail();
-        String graduationDate = validation.inputGraduationDate(
-                "Enter graduation date (dd/MM/yyyy): ", birthDate);
+        Candidate c = inputCandidate(id, Validation.EXPERIENCE);
+        String graduationDate = inputGraduationDate(c.getBirthDate());
         String graduationRank = validation.inputString(
                 "Enter graduation rank (Excellence/Good/Fair/Poor): ",
                 Validation.GRADUATION_RANK_REGEX);
         String education = validation.inputString(
                 "Enter university where graduated: ", ".+");
 
-        return new Fresher(id, firstName, lastName, birthDate, address, phone,
-                email, graduationDate, graduationRank, education);
+        return new Fresher(c.getId(), c.getFirstName(), c.getLastName(),
+                c.getBirthDate(), c.getAddress(),
+                c.getPhone(), c.getEmail(), graduationDate, graduationRank, education);
     }
 
     /**
@@ -190,19 +216,15 @@ public class CandidateView {
      * @return thực tập sinh vừa nhập
      */
     public Internship inputInternship(String id) {
-        String firstName = inputFirstName();
-        String lastName = inputLastName();
-        int birthDate = inputBirthDate();
-        String address = inputAddress();
-        String phone = inputPhone();
-        String email = inputEmail();
+        Candidate c = inputCandidate(id, Validation.EXPERIENCE);
         String major = validation.inputString("Enter major: ", ".+");
         String semester = validation.inputString("Enter semester: ", ".+");
         String university = validation.inputString(
                 "Enter university name: ", ".+");
 
-        return new Internship(id, firstName, lastName, birthDate, address,
-                phone, email, major, semester, university);
+        return new Internship(c.getId(), c.getFirstName(), c.getLastName(),
+                c.getBirthDate(), c.getAddress(),
+                c.getPhone(), c.getEmail(), major, semester, university);
     }
 
     /**
@@ -372,8 +394,8 @@ public class CandidateView {
      * @return năm sinh hợp lệ
      */
     private int inputBirthDate() {
-        return validation.inputInt("Enter birth date (1900-" + CURRENT_YEAR
-                + "): ", 1900, CURRENT_YEAR);
+        return validation.inputInt("Enter birth date (1900-" + VALID_YEAR
+                + "): ", 1900, VALID_YEAR);
     }
 
     /**

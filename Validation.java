@@ -25,6 +25,10 @@ import java.util.Scanner;
  * @author [Họ tên sinh viên]
  */
 public class Validation {
+    
+    public static final int EXPERIENCE = 0;
+    public static final int FRESHER = 1;
+    public static final int INTERN = 2;
 
     /**
      * Mẫu số điện thoại: chỉ gồm chữ số, tối thiểu 10 ký tự.
@@ -153,37 +157,5 @@ public class Validation {
             System.out.println("Invalid date. Format must be "
                     + DATE_FORMAT + ".");
         }
-    }
-
-    /**
-     * Nhập ngày tốt nghiệp (dd/MM/yyyy) và bắt buộc năm tốt nghiệp phải sau
-     * năm sinh.
-     *
-     * @param message   nội dung nhắc nhập
-     * @param birthYear năm sinh của ứng viên
-     * @return ngày tốt nghiệp hợp lệ dưới dạng chuỗi dd/MM/yyyy
-     */
-    public String inputGraduationDate(String message, int birthYear) {
-        while (true) {
-            String date = inputDate(message);
-
-            if (isAfterBirthYear(date, birthYear)) {
-                return date;
-            }
-            System.out.println("Graduation year must be after birth year ("
-                    + birthYear + ").");
-        }
-    }
-
-    /**
-     * Kiểm tra năm của ngày (dd/MM/yyyy) có lớn hơn năm sinh hay không.
-     *
-     * @param date      ngày hợp lệ dạng dd/MM/yyyy
-     * @param birthYear năm sinh
-     * @return true nếu năm của ngày lớn hơn năm sinh
-     */
-    private boolean isAfterBirthYear(String date, int birthYear) {
-        int year = Integer.parseInt(date.substring(6));
-        return year > birthYear;
     }
 }
