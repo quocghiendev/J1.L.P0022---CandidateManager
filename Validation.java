@@ -1,8 +1,8 @@
 /*
  * Validation.java
  *
- * Phiên bản: 1.0
- * Ngày cập nhật: 28/10/2026
+ * Phiên bản: 1.1
+ * Ngày cập nhật: 06/11/2026
  * Tác giả: [Họ tên sinh viên] - [Mã sinh viên]
  *
  * Copyright (c) 2026 [Họ tên sinh viên]. All rights reserved.
@@ -18,10 +18,10 @@ import java.util.Scanner;
 
 /**
  * Cung cấp các hàm nhập dữ liệu có kiểm tra tính hợp lệ (chuỗi theo mẫu regex,
- * số nguyên trong khoảng, ngày, xếp loại tốt nghiệp, Y/N). Mỗi hàm lặp lại cho
- * tới khi người dùng nhập đúng.
+ * số nguyên trong khoảng, ngày, ngày tốt nghiệp sau năm sinh). Mỗi hàm lặp lại
+ * cho tới khi người dùng nhập đúng.
  *
- * @version 1.0 28 Oct 2026
+ * @version 1.1 06 Nov 2026
  * @author [Họ tên sinh viên]
  */
 public class Validation {
@@ -42,13 +42,25 @@ public class Validation {
      */
     private static final String[] GRADUATION_RANKS
             = {"Excellence", "Good", "Fair", "Poor"};
-    
-    public static final String GRADUATION_RANK_REGEX ="(?i)" + String.join("|", GRADUATION_RANKS);
+
+    /**
+     * Mẫu xếp loại tốt nghiệp: một trong các xếp loại hợp lệ, không phân biệt
+     * chữ hoa, chữ thường.
+     */
+    public static final String GRADUATION_RANK_REGEX
+            = "(?i)" + String.join("|", GRADUATION_RANKS);
 
     /**
      * Định dạng ngày tốt nghiệp.
      */
     private static final String DATE_FORMAT = "dd/MM/yyyy";
+
+    /**
+     * Mẫu chuỗi ngày: 2 chữ số ngày, 2 chữ số tháng, 4 chữ số năm. Dùng để
+     * chặn năm viết thiếu chữ số (ví dụ 01/01/20) mà SimpleDateFormat vẫn
+     * chấp nhận.
+     */
+    private static final String DATE_REGEX = "\\d{2}/\\d{2}/\\d{4}";
 
     /**
      * Đối tượng đọc dữ liệu từ bàn phím.
@@ -129,13 +141,49 @@ public class Validation {
             System.out.print(message);
             String input = readLine();
 
-            try {
-                format.parse(input);
-                return input;
-            } catch (ParseException e) {
-                System.out.println("Invalid date. Format must be "
-                        + DATE_FORMAT + ".");
+            if (input.matches(DATE_REGEX)) {
+                try {
+                    format.parse(input);
+                    return input;
+                } catch (ParseException e) {
+
+                    /* Rơi xuống thông báo lỗi bên dưới. */
+                }
             }
+            System.out.println("Invalid date. Format must be "
+                    + DATE_FORMAT + ".");
         }
+    }
+
+    /**
+     * Nhập ngày tốt nghiệp (dd/MM/yyyy) và bắt buộc năm tốt nghiệp phải sau
+     * năm sinh.
+     *
+     * @param message   nội dung nhắc nhập
+     * @param birthYear năm sinh của ứng viên
+     * @return ngày tốt nghiệp hợp lệ dưới dạng chuỗi dd/MM/yyyy
+     */
+    public String inputGraduationDate(String message, int birthYear) {
+        while (true) {
+            String date = inputDate(message);
+
+            if (isAfterBirthYear(date, birthYear)) {
+                return date;
+            }
+            System.out.println("Graduation year must be after birth year ("
+                    + birthYear + ").");
+        }
+    }
+
+    /**
+     * Kiểm tra năm của ngày (dd/MM/yyyy) có lớn hơn năm sinh hay không.
+     *
+     * @param date      ngày hợp lệ dạng dd/MM/yyyy
+     * @param birthYear năm sinh
+     * @return true nếu năm của ngày lớn hơn năm sinh
+     */
+    private boolean isAfterBirthYear(String date, int birthYear) {
+        int year = Integer.parseInt(date.substring(6));
+        return year > birthYear;
     }
 }

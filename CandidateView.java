@@ -1,8 +1,8 @@
 /*
  * CandidateView.java
  *
- * Phiên bản: 1.0
- * Ngày cập nhật: 28/10/2026
+ * Phiên bản: 1.1
+ * Ngày cập nhật: 06/11/2026
  * Tác giả: [Họ tên sinh viên] - [Mã sinh viên]
  *
  * Copyright (c) 2026 [Họ tên sinh viên]. All rights reserved.
@@ -26,7 +26,7 @@ import util.Validation;
  * View trong kiến trúc MVC: chỉ lo việc nhập, xuất dữ liệu và không xử lý
  * nghiệp vụ.
  *
- * @version 1.0 28 Oct 2026
+ * @version 1.1 06 Nov 2026
  * @author [Họ tên sinh viên]
  */
 public class CandidateView {
@@ -36,6 +36,48 @@ public class CandidateView {
      */
     private static final String[] TYPE_TITLES = {
         "EXPERIENCE CANDIDATE", "FRESHER CANDIDATE", "INTERN CANDIDATE"};
+
+    /**
+     * Định dạng dòng tiêu đề cột của ứng viên Experience (toàn bộ là chuỗi).
+     */
+    private static final String EXPERIENCE_HEADER_FORMAT
+            = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-8s %-20s%n";
+
+    /**
+     * Định dạng một dòng dữ liệu của ứng viên Experience: ID, First name,
+     * Last name, Birth year, Address, Phone, Email, Years of experience,
+     * Professional skill.
+     */
+    private static final String EXPERIENCE_ROW_FORMAT
+            = "%-8s %-15s %-15s %-6d %-20s %-12s %-25s %-8d %-20s%n";
+
+    /**
+     * Định dạng dòng tiêu đề cột của ứng viên Fresher (toàn bộ là chuỗi).
+     */
+    private static final String FRESHER_HEADER_FORMAT
+            = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-12s %-10s %-20s%n";
+
+    /**
+     * Định dạng một dòng dữ liệu của ứng viên Fresher: ID, First name,
+     * Last name, Birth year, Address, Phone, Email, Graduation date,
+     * Graduation rank, University.
+     */
+    private static final String FRESHER_ROW_FORMAT
+            = "%-8s %-15s %-15s %-6d %-20s %-12s %-25s %-12s %-10s %-20s%n";
+
+    /**
+     * Định dạng dòng tiêu đề cột của ứng viên Internship (toàn bộ là chuỗi).
+     */
+    private static final String INTERN_HEADER_FORMAT
+            = "%-8s %-15s %-15s %-6s %-20s %-12s %-25s %-15s %-10s %-20s%n";
+
+    /**
+     * Định dạng một dòng dữ liệu của ứng viên Internship: ID, First name,
+     * Last name, Birth year, Address, Phone, Email, Major, Semester,
+     * University.
+     */
+    private static final String INTERN_ROW_FORMAT
+            = "%-8s %-15s %-15s %-6d %-20s %-12s %-25s %-15s %-10s %-20s%n";
 
     /**
      * Năm hiện tại, dùng làm cận trên cho năm sinh.
@@ -116,7 +158,8 @@ public class CandidateView {
     }
 
     /**
-     * Nhập thông tin ứng viên mới tốt nghiệp.
+     * Nhập thông tin ứng viên mới tốt nghiệp. Năm tốt nghiệp phải sau năm
+     * sinh.
      *
      * @param id mã ứng viên đã được Controller kiểm tra không trùng
      * @return ứng viên mới tốt nghiệp vừa nhập
@@ -128,10 +171,10 @@ public class CandidateView {
         String address = inputAddress();
         String phone = inputPhone();
         String email = inputEmail();
-        String graduationDate = validation.inputDate(
-                "Enter graduation date (dd/MM/yyyy): ");
-        String graduationRank = validation.inputString("input graduation "
-                + "rank (Excellence/Good/Fair/Poor)",
+        String graduationDate = validation.inputGraduationDate(
+                "Enter graduation date (dd/MM/yyyy): ", birthDate);
+        String graduationRank = validation.inputString(
+                "Enter graduation rank (Excellence/Good/Fair/Poor): ",
                 Validation.GRADUATION_RANK_REGEX);
         String education = validation.inputString(
                 "Enter university where graduated: ", ".+");
@@ -165,10 +208,11 @@ public class CandidateView {
     /**
      * Hỏi người dùng có muốn tiếp tục nhập ứng viên hay không.
      *
-     * @return true nếu chọn Y, false nếu chọn N
+     * @return "Y" hoặc "N" (không phân biệt hoa thường)
      */
     public String inputContinue() {
-        return validation.inputString("Do you want to continue (Y/N)? ", "^(?i:Y|N)$");
+        return validation.inputString("Do you want to continue (Y/N)? ",
+                "^(?i:Y|N)$");
     }
 
     /**
@@ -221,25 +265,84 @@ public class CandidateView {
         for (int type = 0; type < TYPE_TITLES.length; type++) {
             System.out.println("===========" + TYPE_TITLES[type]
                     + "============");
+            printHeader(type);
 
             for (Candidate candidate : candidates) {
                 if (candidate.getCandidateType() == type) {
-                    System.out.println(candidate);
+                    printCandidate(candidate);
                 }
             }
         }
     }
 
     /**
-     * Hiển thị kết quả tìm kiếm.
+     * Hiển thị kết quả tìm kiếm. Các ứng viên trong danh sách cùng một loại
+     * (Controller đã lọc theo loại) nên dùng chung một dòng tiêu đề.
      *
-     * @param candidates danh sách ứng viên tìm được
+     * @param candidates danh sách ứng viên tìm được (không rỗng)
      */
     public void displaySearchResult(List<Candidate> candidates) {
         System.out.println("\nThe candidates found:");
+        printHeader(candidates.get(0).getCandidateType());
 
         for (Candidate candidate : candidates) {
-            System.out.println(candidate);
+            printCandidate(candidate);
+        }
+    }
+
+    /**
+     * In dòng tiêu đề cột tương ứng với loại ứng viên.
+     *
+     * @param type 0 - Experience, 1 - Fresher, 2 - Intern
+     */
+    private void printHeader(int type) {
+        switch (type) {
+            case Candidate.EXPERIENCE:
+                System.out.print(String.format(EXPERIENCE_HEADER_FORMAT,
+                        "ID", "First name", "Last name", "Birth", "Address",
+                        "Phone", "Email", "Exp(yr)", "Professional skill"));
+                break;
+            case Candidate.FRESHER:
+                System.out.print(String.format(FRESHER_HEADER_FORMAT,
+                        "ID", "First name", "Last name", "Birth", "Address",
+                        "Phone", "Email", "Graduation", "Rank",
+                        "University"));
+                break;
+            default:
+                System.out.print(String.format(INTERN_HEADER_FORMAT,
+                        "ID", "First name", "Last name", "Birth", "Address",
+                        "Phone", "Email", "Major", "Semester",
+                        "University"));
+                break;
+        }
+    }
+
+    /**
+     * In đầy đủ thông tin một ứng viên theo định dạng của loại tương ứng.
+     *
+     * @param candidate ứng viên cần in
+     */
+    private void printCandidate(Candidate candidate) {
+        if (candidate instanceof Experience) {
+            Experience e = (Experience) candidate;
+            System.out.print(String.format(EXPERIENCE_ROW_FORMAT,
+                    e.getId(), e.getFirstName(), e.getLastName(),
+                    e.getBirthDate(), e.getAddress(), e.getPhone(),
+                    e.getEmail(), e.getExpInYear(), e.getProSkill()));
+        } else if (candidate instanceof Fresher) {
+            Fresher f = (Fresher) candidate;
+            System.out.print(String.format(FRESHER_ROW_FORMAT,
+                    f.getId(), f.getFirstName(), f.getLastName(),
+                    f.getBirthDate(), f.getAddress(), f.getPhone(),
+                    f.getEmail(), f.getGraduationDate(),
+                    f.getGraduationRank(), f.getEducation()));
+        } else if (candidate instanceof Internship) {
+            Internship i = (Internship) candidate;
+            System.out.print(String.format(INTERN_ROW_FORMAT,
+                    i.getId(), i.getFirstName(), i.getLastName(),
+                    i.getBirthDate(), i.getAddress(), i.getPhone(),
+                    i.getEmail(), i.getMajor(), i.getSemester(),
+                    i.getUniversity()));
         }
     }
 

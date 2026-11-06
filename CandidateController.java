@@ -1,8 +1,8 @@
 /*
  * CandidateController.java
  *
- * Phiên bản: 1.0
- * Ngày cập nhật: 28/10/2026
+ * Phiên bản: 1.1
+ * Ngày cập nhật: 06/11/2026
  * Tác giả: [Họ tên sinh viên] - [Mã sinh viên]
  *
  * Copyright (c) 2026 [Họ tên sinh viên]. All rights reserved.
@@ -22,10 +22,10 @@ import view.CandidateView;
 /**
  * Điều phối giữa View và Model của chương trình Quản lý ứng viên. Đây là thành
  * phần Controller trong kiến trúc MVC: nhận lựa chọn từ View, thực hiện nghiệp
- * vụ (thêm, kiểm tra trùng mã, tìm kiếm) trên danh sách Candidate, rồi yêu cầu
- * View hiển thị kết quả.
+ * vụ (thêm, kiểm tra trùng mã, kiểm tra trùng ứng viên, tìm kiếm) trên danh
+ * sách Candidate, rồi yêu cầu View hiển thị kết quả.
  *
- * @version 1.0 28 Oct 2026
+ * @version 1.1 06 Nov 2026
  * @author [Họ tên sinh viên]
  */
 public class CandidateController {
@@ -104,16 +104,25 @@ public class CandidateController {
     }
 
     /**
-     * Tạo ứng viên thuộc loại cho trước. Sau mỗi ứng viên được tạo, hỏi người
-     * dùng có tiếp tục hay không. Khi dừng, hiển thị toàn bộ ứng viên đã tạo.
+     * Tạo ứng viên thuộc loại cho trước. Ứng viên trùng họ tên và trùng số
+     * điện thoại hoặc email với một ứng viên đã có sẽ không được thêm. Sau mỗi
+     * lần nhập, hỏi người dùng có tiếp tục hay không. Khi dừng, hiển thị toàn
+     * bộ ứng viên đã tạo.
      *
      * @param type loại ứng viên (0 - Experience, 1 - Fresher, 2 - Intern)
      */
     private void createCandidates(int type) {
         do {
             String id = inputUniqueId();
-            candidates.add(inputCandidate(type, id));
-            view.showMessage("Candidate added successfully.");
+            Candidate candidate = inputCandidate(type, id);
+
+            if (isCandidateExisted(candidate)) {
+                view.showMessage("Candidate already exists (same full name "
+                        + "and same phone or email). Not created.");
+            } else {
+                candidates.add(candidate);
+                view.showMessage("Candidate added successfully.");
+            }
         } while (view.inputContinue().equalsIgnoreCase("Y"));
 
         view.showMessage("\nAll candidates created:");
@@ -170,7 +179,45 @@ public class CandidateController {
         }
         return false;
     }
-    
+
+    /**
+     * Kiểm tra ứng viên đã tồn tại trong danh sách hay chưa. Ứng viên được coi
+     * là đã tồn tại khi trùng họ tên đầy đủ VÀ (trùng số điện thoại HOẶC trùng
+     * email) với một ứng viên có sẵn, bất kể loại ứng viên.
+     *
+     * @param newCandidate ứng viên mới nhập
+     * @return true nếu đã tồn tại ứng viên trùng, ngược lại false
+     */
+    private boolean isCandidateExisted(Candidate newCandidate) {
+        String newName = normalizeName(newCandidate.getFullName());
+
+        for (Candidate candidate : candidates) {
+            boolean sameName
+                    = normalizeName(candidate.getFullName()).equals(newName);
+            boolean samePhone
+                    = candidate.getPhone().equals(newCandidate.getPhone());
+            boolean sameEmail
+                    = candidate.getEmail().equalsIgnoreCase(
+                            newCandidate.getEmail());
+
+            if (sameName && (samePhone || sameEmail)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Chuẩn hóa họ tên để so sánh: bỏ khoảng trắng thừa, gom nhiều khoảng
+     * trắng liên tiếp thành một và chuyển về chữ thường.
+     *
+     * @param name họ tên cần chuẩn hóa
+     * @return họ tên đã chuẩn hóa
+     */
+    private String normalizeName(String name) {
+        return name.trim().replaceAll("\\s+", " ").toLowerCase();
+    }
+
     /**
      * Hiển thị danh sách tên ứng viên, nhận từ khóa và loại ứng viên rồi tìm
      * kiếm và hiển thị kết quả.
