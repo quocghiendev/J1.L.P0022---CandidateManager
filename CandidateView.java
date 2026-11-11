@@ -9,6 +9,10 @@
  *
  * Mô tả: Thành phần View của chương trình Quản lý ứng viên.
  * Lớp nhập dữ liệu từ người dùng và hiển thị kết quả ra màn hình.
+ * Update: Thêm VALID_DATE = CURRENT YEAR - 18 (Hợp lệ cho năm sinh ) , ID chỉnh thành
+dạng STRING , Tạo hàm inputCANDIDATE làm chung cho 3 hàm nhập thông tin còn lại,
+Thêm MIN_VALID_AGE = 12 (Yêu cầu 12 tuổi mới được tốt nghiệp và 12 tuổi mới được đi làm và có số năm kinh nghiệm)
+
  */
 package view;
 
@@ -159,7 +163,10 @@ public class CandidateView {
         Candidate c = inputCandidate(id, Validation.EXPERIENCE);
         int expInYear = validation.inputInt(
                 "Enter year of experience (0-100): ", 0, 
-                (CURRENT_YEAR - c.getBirthDate())- MIN_VALID_AGE);
+                (CURRENT_YEAR - c.getBirthDate())- MIN_VALID_AGE); 
+        /**
+         * Số năm làm việc sẽ chạy từ 0 đến số tuổi - 12 vì 12 tuổi mới được đi làm và có số năm kinh nghiệm 
+         */
         String proSkill = validation.inputString(
                 "Enter professional skill: ", ".+");
 
@@ -179,9 +186,13 @@ public class CandidateView {
         while (true) {
             String date = validation.inputDate(
                     "Enter graduation date (dd/MM/yyyy): ");
-            int year = Integer.parseInt(date.substring(6));
+            int year = Integer.parseInt(date.substring(6)); // sửa phần này 
 
-            if (year >= birthYear + MIN_VALID_AGE && year <= CURRENT_YEAR) {
+            /**
+             * Năm tốt nghiệp phải lớn hơn năm sinh + 12 < tức là 12 tuổi mới được tốt nghiệp >
+             * và Năm tốt nghiệp phải nhỏ hơn năm hiện tại 
+             */
+            if (year >= birthYear + MIN_VALID_AGE && year <= CURRENT_YEAR) { 
                 return date;
             }
             System.out.println("Graduation year must be at least "
